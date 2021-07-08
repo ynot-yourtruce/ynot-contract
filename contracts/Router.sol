@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 pragma solidity >0.8.0;
 import "./interface/IERC20.sol";
 import "./interface/IFactory.sol";
@@ -43,7 +44,7 @@ contract Router{
 
 
     /** Get amount out through a path */
-    function getAmountsOut(address[] memory path, uint256 amountIn) public returns(uint256[] memory amounts){
+    function getAmountsOut(address[] memory path, uint256 amountIn) public view returns(uint256[] memory amounts){
 
         amounts = new uint[](path.length);
         amounts[0] = amountIn;
@@ -54,7 +55,7 @@ contract Router{
     }
 
     /** Get amount in through a path */
-    function getAmountsIn(address[] memory path, uint256 amountIn) public returns(uint256[] memory amounts){
+    function getAmountsIn(address[] memory path, uint256 amountIn) public view returns(uint256[] memory amounts){
 
         amounts = new uint[](path.length);
         amounts[0] = amountIn;

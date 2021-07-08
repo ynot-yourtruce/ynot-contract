@@ -1,5 +1,5 @@
+// SPDX-License-Identifier: MIT
 pragma solidity >0.8.0;
-import "./interface/IUniswapRouterV2.sol";
 import "./lib/SafeMath.sol";
 import "./lib/Math.sol";
 import './interface/IERC20.sol';

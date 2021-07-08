@@ -1,8 +1,8 @@
+// SPDX-License-Identifier: MIT
 pragma solidity >0.8.0;
 pragma experimental ABIEncoderV2;
 import "./interface/IERC20.sol";
-import "./PairPool.sol";
-import "./Factory.sol";
+import "./interface/IPairPool.sol";
 
 contract LiquidityMinter {
     
@@ -19,7 +19,6 @@ contract LiquidityMinter {
     mapping ( address => mapping(uint256 => OfferStruct)) public offers;
 
     address public pairPool;
-    address public factory;
     address public tokenA;
     address public tokenB;
 
@@ -27,7 +26,7 @@ contract LiquidityMinter {
     mapping (address => uint256) public end;
 
 
-    constructor(address _pairPool, address _tokenA, address _tokenB, address _factory) {
+    constructor(address _pairPool, address _tokenA, address _tokenB) {
         start[tokenA] = 1;
         end[tokenA] = 0;
 
@@ -37,7 +36,6 @@ contract LiquidityMinter {
         pairPool = _pairPool;
         tokenA = _tokenA;
         tokenA = _tokenB;
-        factory = _factory;
     }
 
 
@@ -70,14 +68,6 @@ contract LiquidityMinter {
         return offer_list;
     }
 
-
-    // function update(address token,uint256 id) public {
-    //     require(msg.sender == offers[token][id].owner);
-    //     offers[token][id] = OfferStruct(msg.sender, amount, amount, id, offers[token][id].next, offers[token][id].prev);
-
-    // }
-
-
     
     function deleteOffer(address token, uint256 id) public {
 
@@ -106,8 +96,8 @@ contract LiquidityMinter {
 
         OfferStruct memory selected_offer;
 
-        PairPool pool = PairPool(pairPool);
-        (uint reserveA, uint reserveB) = PairPool(pairPool).getReserve();
+        IPairPool pool = IPairPool(pairPool);
+        (uint reserveA, uint reserveB) = IPairPool(pairPool).getReserve();
 
         if(token == tokenA){
             selected_offer = offers[tokenB][id];
