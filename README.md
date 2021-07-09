@@ -10,4 +10,6 @@
 - [ ] Release
 
 
+# Learn what a quantum entangled NFT is
+
 ![alt text](https://i.imgur.com/paDYGqZ.png)
