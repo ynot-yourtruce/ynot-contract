@@ -30,18 +30,20 @@ contract PairPool is ERC721{
         tokenA = _tokenA;
         tokenB = _tokenB;
         owner = _owner;
+        totalSupply = 0;
     }
     
     /** Allow Market takers to swap tokens */
-    function swapToken(uint256 amount, address reciver) public returns(uint256){
-        // take TokenB give TokenA
+    function swapToken(uint256 amountIn, uint256 amountOut, address reciver) public{
 
-        uint256 amountAfterFee = getAmountOut(amount);
+        if (amountIn > 0) IERC20(tokenA).transfer(reciver, amountIn);
+        if (amountOut > 0) IERC20(tokenB).transfer(reciver, amountOut);
         
-        IERC20(tokenB).transferFrom(msg.sender, address(this), amount);
-        IERC20(tokenA).transfer(reciver, amountAfterFee);
-        
-        return amountAfterFee;
+        uint256 balance0 = IERC20(tokenA).balanceOf(address(this));
+        uint256 balance1 = IERC20(tokenB).balanceOf(address(this));
+
+        reserveIn = balance0;
+        reserveOut = balance1;
     }
 
     /** Get estimated amount of token afer swap */
@@ -74,7 +76,7 @@ contract PairPool is ERC721{
         return (reserveIn, reserveOut);
     }
 
-    function quote(uint amountA, uint256 reserveA, uint256 reserveB) external pure returns (uint amountB) {
+    function quote(uint amountA, uint256 reserveA, uint256 reserveB) public pure returns (uint amountB) {
         require(amountA > 0, 'INSUFFICIENT_AMOUNT');
         require(reserveA > 0 && reserveB > 0, 'INSUFFICIENT_LIQUIDITY');
         amountB = amountA.mul(reserveB) / reserveA;
@@ -154,5 +156,25 @@ contract PairPool is ERC721{
         IERC20(token1).transfer(ownerOf(particles[tokenId]), amount1);
 
         burnPair(tokenId);
+    }
+
+    function addLiquidity(uint256 amount0, uint256 amount1) public{
+    
+        uint amountBOptimal = quote(amount0, reserveIn, reserveOut);
+
+        require(amountBOptimal <= amount1, "Can not match");
+        IERC20(tokenB).transferFrom(msg.sender, address(this), amount0);
+        IERC20(tokenA).transferFrom(msg.sender, address(this), amount1);
+        
+        mint(msg.sender, msg.sender);
+    }
+
+    function addInitialLiquidity(uint256 amount0, uint256 amount1) public{
+
+        // only owner and should be called once
+        IERC20(tokenB).transferFrom(msg.sender, address(this), amount0);
+        IERC20(tokenA).transferFrom(msg.sender, address(this), amount1);
+
+        mint(msg.sender, msg.sender);
     }
 }

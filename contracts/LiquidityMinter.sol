@@ -42,7 +42,8 @@ contract LiquidityMinter {
     function create(address token, uint256 amount) public {
         end[token]++;
 
-        offers[token][end[token]] = OfferStruct(msg.sender, amount, amount, end[token], end [token]+ 1, end[token] - 1);
+        IERC20(token).transferFrom(msg.sender, address(this), amount);
+        offers[token][end[token]] = OfferStruct(msg.sender, amount, amount, end[token], end[token]+ 1, end[token] - 1);
 
         if (end[token] - 1 != 0) {
             offers[token][end[token] - 1].next = end[token];
@@ -119,7 +120,5 @@ contract LiquidityMinter {
             pool.mint(msg.sender, selected_offer.owner);
         }
     }
-
-
 
 }

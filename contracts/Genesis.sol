@@ -5,14 +5,20 @@ import "./interface/IFactory.sol";
 
 contract Genesis{
 
-    IYNOTFactory factory;
+    IYNOTFactory public factory;
 
     function createNewPair(address _tokenA, address _tokenB) public{
         
-        address pool_addr = factory.createAPair(_tokenA, _tokenB);
+        factory.createAPair(_tokenA, _tokenB);
+        
+        address pool_addr = factory.getLastPool();
         
         LiquidityMinter new_minter = new LiquidityMinter(address(pool_addr), _tokenA, _tokenB);
 
         factory.addLiquidityMinter(pool_addr, address(new_minter));
+    }
+
+    function setFactory(address new_factory) public{
+        factory = IYNOTFactory(new_factory);
     }
 }

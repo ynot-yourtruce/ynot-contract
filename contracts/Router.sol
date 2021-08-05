@@ -13,31 +13,44 @@ contract Router{
     }
 
     /** Perform a swap */
-    function swap(address[] memory path, uint256 [] memory amount, address _to) internal{
+    function swap(address[] memory path, uint256 [] memory amounts, address _to) internal{
 
-        for(uint256 i=0; i< path.length; i++){
+        for(uint256 i; i< path.length - 1; i++){
 
-            address pool_address = factory.getPool(path[i], path[i+1]);
+            (address input, address output) = (path[i], path[i + 1]);
+            address token0 = input < output ? input : output;
+            uint amountOut = amounts[i + 1];
+            (uint amount0Out, uint amount1Out) = input == token0 ? (uint(0), amountOut) : (amountOut, uint(0));
+
+            address pool_address = factory.getPool(input, output);
 
             address to = i < path.length - 2 ? factory.getPool(path[i+1], path[i+2]) : _to;
             PairPool pair = PairPool(pool_address);
-            pair.swapToken(amount[i], to);
+            pair.swapToken(amount0Out, amount1Out, to);
         }
     }
 
 
-    function swapTokensForExactTokens(address[] memory path, uint256 amount, uint256 minAmountOut, address _to) internal returns(uint256){
+    function swapTokensForExactTokens(address[] memory path, uint256 amount, uint256 minAmountOut, address _to) public returns(uint256){
 
         uint256[] memory amountOut = getAmountsOut(path, amount);
-        require(amountOut[amountOut.length - 1] >= minAmountOut);
+        require(amountOut[amountOut.length - 1] >= minAmountOut, "Expectation is greater");
+
+        address pool_address = factory.getPool(path[0], path[1]);
+        IERC20(path[0]).transferFrom(msg.sender, pool_address, amount);
+
         swap(path, amountOut, _to);
         return amountOut[amountOut.length - 1];
     }
 
-    function swapExactTokensForTokens(address[] memory path, uint256 amount, uint256 minAmountIn, address _to) internal returns(uint256){
+    function swapExactTokensForTokens(address[] memory path, uint256 amount, uint256 minAmountIn, address _to) public returns(uint256){
 
         uint256[] memory amountIn = getAmountsIn(path, amount);
-        require(amountIn[amountIn.length - 1] <= minAmountIn);
+        require(amountIn[amountIn.length - 1] <= minAmountIn, "Expectation is greater");
+        
+        address pool_address = factory.getPool(path[0], path[1]);
+        IERC20(path[0]).transferFrom(msg.sender, pool_address, amount);
+        
         swap(path, amountIn, _to);
         return amountIn[amountIn.length - 1];
     }
