@@ -3,7 +3,7 @@ pragma solidity >0.8.0;
 
 interface IPairPool{
 
-    function mint(address one, address two) external pure;
+    function mint(address one, address two) external;
 
 
     function quote(uint amountA, uint256 reserveA, uint256 reserveB) external pure returns (uint amountB);

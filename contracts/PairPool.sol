@@ -17,6 +17,7 @@ contract PairPool is ERC721{
     uint256 public reserveOut;
 
     bool public is_active;
+    bool public is_liquidity_added;
 
     mapping (uint256 => uint256) public particles;
     mapping (uint256 => address) public particlesElement;
@@ -88,14 +89,15 @@ contract PairPool is ERC721{
         uint balance0 = IERC20(tokenA).balanceOf(address(this));
         uint balance1 = IERC20(tokenB).balanceOf(address(this));
 
+ 
+        uint256 liquidity = 0;
         uint amount0 = balance0.sub(reserveIn);
         uint amount1 = balance1.sub(reserveOut);
 
-        uint256 liquidity = 0;
-
         if(totalSupply == 0){
-            liquidity = Math.sqrt(amount0.mul(amount1));
+            liquidity = amount1.mul(amount0);
         }else{
+
             liquidity = Math.min(amount0.mul(totalSupply) / reserveIn, amount1.mul(totalSupply) / reserveOut);
         }
         require(liquidity > 0, 'INSUFFICIENT_LIQUIDITY_MINTED');
@@ -160,21 +162,25 @@ contract PairPool is ERC721{
 
     function addLiquidity(uint256 amount0, uint256 amount1) public{
     
-        uint amountBOptimal = quote(amount0, reserveIn, reserveOut);
+        uint amountBOptimal = quote(amount0, reserveOut, reserveIn);
 
         require(amountBOptimal <= amount1, "Can not match");
         IERC20(tokenB).transferFrom(msg.sender, address(this), amount0);
-        IERC20(tokenA).transferFrom(msg.sender, address(this), amount1);
+        IERC20(tokenA).transferFrom(msg.sender, address(this), amountBOptimal);
         
         mint(msg.sender, msg.sender);
     }
 
     function addInitialLiquidity(uint256 amount0, uint256 amount1) public{
 
+        require(is_liquidity_added == false, "Must be called once");
+
         // only owner and should be called once
-        IERC20(tokenB).transferFrom(msg.sender, address(this), amount0);
-        IERC20(tokenA).transferFrom(msg.sender, address(this), amount1);
+        IERC20(tokenA).transferFrom(msg.sender, address(this), amount0);
+        IERC20(tokenB).transferFrom(msg.sender, address(this), amount1);
 
         mint(msg.sender, msg.sender);
+
+        is_liquidity_added = true;
     }
 }
